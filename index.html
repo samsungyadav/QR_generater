@@ -3,98 +3,357 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro QR Generator</title>
+    <title>Pro QR Generator & Scanner</title>
+    <!-- QRCode.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --primary: #4a90e2; --bg: #f8f9fa; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: auto; }
-        
-        /* Step Cards Animation */
-        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px; animation: fadeInUp 0.8s ease-out; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        h2 { color: #333; font-size: 1.5rem; margin-bottom: 20px; }
-        .step-num { background: var(--primary); color: white; padding: 5px 12px; border-radius: 50%; font-size: 12px; margin-right: 10px; }
-        
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #eee; border-radius: 10px; outline: none; }
-        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #357abd; transform: scale(1.02); }
-        
-        #qr-canvas { margin-top: 20px; display: block; margin-left: auto; margin-right: auto; }
-        .help-text { font-size: 12px; color: #888; margin-top: 5px; }
+        :root {
+            --primary: #ff6b35;
+            --primary-light: #ff9f1c;
+            --dark: #1a1a24;
+            --bg: #f4f7fb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* --- 1. Top Hero Section with Logo Animation --- */
+        .hero {
+            background: linear-gradient(135deg, #14141e, #232336);
+            color: white;
+            text-align: center;
+            padding: 45px 20px 35px;
+            position: relative;
+        }
+
+        .animated-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-box {
+            width: 65px;
+            height: 65px;
+            border: 3px solid var(--primary-light);
+            border-radius: 16px;
+            position: absolute;
+            animation: rotateGlow 6s linear infinite;
+        }
+
+        .logo-core {
+            font-size: 26px;
+            animation: pulseIcon 2s ease-in-out infinite;
+        }
+
+        @keyframes rotateGlow {
+            0% { transform: rotate(0deg); box-shadow: 0 0 10px rgba(255, 107, 53, 0.4); }
+            50% { transform: rotate(180deg); box-shadow: 0 0 25px rgba(255, 159, 28, 0.8); }
+            100% { transform: rotate(360deg); box-shadow: 0 0 10px rgba(255, 107, 53, 0.4); }
+        }
+
+        @keyframes pulseIcon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .hero h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #ff9f1c, #ff4081);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .hero p {
+            color: #b0b0c0;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* --- 2. Main Container & Form Cards --- */
+        .container {
+            max-width: 460px;
+            margin: -20px auto 30px;
+            padding: 0 16px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 22px;
+            margin-bottom: 18px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .step-badge {
+            background: var(--primary);
+            color: white;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            margin-right: 10px;
+        }
+
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #eef0f5;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        .hint {
+            font-size: 11.5px;
+            color: #777;
+            margin-top: 6px;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(255, 107, 53, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-generate:active {
+            transform: scale(0.98);
+        }
+
+        /* --- 3. Scroll Reveal QR Animation Section --- */
+        .reveal-section {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+            text-align: center;
+        }
+
+        .reveal-section.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scanner-frame {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            margin: 15px auto;
+            border: 3px solid rgba(255, 107, 53, 0.3);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        /* Laser Line Animation */
+        .laser-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #ff4081, #ff9f1c, transparent);
+            box-shadow: 0 0 8px #ff4081;
+            animation: scanMove 2.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes scanMove {
+            0% { top: 5%; }
+            100% { top: 92%; }
+        }
+
+        .btn-download {
+            display: none;
+            width: 100%;
+            margin-top: 14px;
+            padding: 13px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #temp-qr { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1 style="text-align:center; color: var(--primary);">GET-QR.COM</h1>
-
-    <!-- Step 1 -->
-    <div class="card">
-        <h2><span class="step-num">1</span>Enter Content</h2>
-        <input type="text" id="qr-text" placeholder="URL, Google Drive link, Text...">
-        <p class="help-text">PDF/PPT ke liye pehle unhe Google Drive pe upload karke link yahan dalein.</p>
+    <!-- Header / Top Animation -->
+    <div class="hero">
+        <div class="animated-logo">
+            <div class="logo-box"></div>
+            <div class="logo-core">⚡</div>
+        </div>
+        <h1>GET-QR PRO</h1>
+        <p>Instant High-Res QR Generator</p>
     </div>
 
-    <!-- Step 2 -->
-    <div class="card">
-        <h2><span class="step-num">2</span>Customize (Optional)</h2>
-        <label>Center Logo/Image:</label>
-        <input type="file" id="qr-logo" accept="image/*">
+    <div class="container">
+        <!-- Step 1: Input URL / Drive Link -->
+        <div class="card">
+            <div class="card-header">
+                <span class="step-badge">1</span> Enter Content
+            </div>
+            <input type="text" id="qr-text" placeholder="Paste Link, Google Drive, Doc URL...">
+            <div class="hint">💡 PDF, PPT, Word ya Images ke liye Google Drive ka link dalein.</div>
+        </div>
+
+        <!-- Step 2: Custom Logo Upload -->
+        <div class="card">
+            <div class="card-header">
+                <span class="step-badge">2</span> Center Logo (Optional)
+            </div>
+            <input type="file" id="qr-logo" accept="image/*">
+            <div class="hint">Photo upload karenge to QR ke beech me lag jayegi.</div>
+        </div>
+
+        <button class="btn-generate" onclick="generateQR()">Generate QR Code</button>
+
+        <!-- Step 3: Scroll & Scanner Reveal Box -->
+        <div class="card reveal-section" id="qr-card">
+            <div class="card-header" style="justify-content: center;">
+                <span class="step-badge">3</span> Result
+            </div>
+            <div class="scanner-frame">
+                <div class="laser-line"></div>
+                <canvas id="final-canvas" width="200" height="200"></canvas>
+            </div>
+            <button class="btn-download" id="download-btn" onclick="downloadQR()">📥 Download QR Code</button>
+        </div>
     </div>
 
-    <button onclick="generateQR()">Generate & Download</button>
+    <div id="temp-qr"></div>
 
-    <div id="qr-result" class="card" style="display:none; text-align:center;">
-        <canvas id="final-canvas" width="250" height="250"></canvas>
-    </div>
-</div>
+    <script>
+        // Scroll Reveal Trigger
+        function checkScroll() {
+            const qrCard = document.getElementById('qr-card');
+            const position = qrCard.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight / 1.15;
 
-<div id="temp-qr" style="display:none;"></div>
+            if (position < screenPosition) {
+                qrCard.classList.add('active');
+            }
+        }
+        window.addEventListener('scroll', checkScroll);
 
-<script>
-    function generateQR() {
-        const text = document.getElementById('qr-text').value;
-        const logoInput = document.getElementById('qr-logo');
-        const tempContainer = document.getElementById('temp-qr');
-        const canvas = document.getElementById('final-canvas');
-        const ctx = canvas.getContext('2d');
-        const resultCard = document.getElementById('qr-result');
+        function generateQR() {
+            const text = document.getElementById('qr-text').value.trim();
+            const logoInput = document.getElementById('qr-logo');
+            const tempContainer = document.getElementById('temp-qr');
+            const canvas = document.getElementById('final-canvas');
+            const ctx = canvas.getContext('2d');
+            const downloadBtn = document.getElementById('download-btn');
+            const qrCard = document.getElementById('qr-card');
 
-        if (!text) return alert("Kuch enter toh karein!");
+            if (!text) {
+                alert("Kripya pehle URL ya text enter karein!");
+                return;
+            }
 
-        tempContainer.innerHTML = '';
-        new QRCode(tempContainer, { text: text, width: 250, height: 250, correctLevel: QRCode.CorrectLevel.H });
+            tempContainer.innerHTML = '';
+            new QRCode(tempContainer, {
+                text: text,
+                width: 200,
+                height: 200,
+                correctLevel: QRCode.CorrectLevel.H
+            });
 
-        setTimeout(() => {
-            const qrImage = tempContainer.querySelector('img');
-            const img = new Image();
-            img.src = qrImage.src;
-            img.onload = () => {
-                ctx.clearRect(0, 0, 250, 250);
-                ctx.drawImage(img, 0, 0, 250, 250);
+            setTimeout(() => {
+                const qrImage = tempContainer.querySelector('img') || tempContainer.querySelector('canvas');
+                if (qrImage) {
+                    const img = new Image();
+                    img.src = qrImage.src || qrImage.toDataURL();
 
-                if (logoInput.files && logoInput.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const logo = new Image();
-                        logo.src = e.target.result;
-                        logo.onload = () => {
-                            ctx.fillStyle = "white";
-                            ctx.fillRect(100, 100, 50, 50); // Logo background
-                            ctx.drawImage(logo, 105, 105, 40, 40);
-                            resultCard.style.display = 'block';
-                        };
+                    img.onload = function () {
+                        ctx.clearRect(0, 0, 200, 200);
+                        ctx.drawImage(img, 0, 0, 200, 200);
+
+                        if (logoInput.files && logoInput.files[0]) {
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                const logo = new Image();
+                                logo.src = e.target.result;
+                                logo.onload = function () {
+                                    const logoSize = 44;
+                                    const x = (200 - logoSize) / 2;
+                                    const y = (200 - logoSize) / 2;
+
+                                    ctx.fillStyle = '#ffffff';
+                                    ctx.fillRect(x - 2, y - 2, logoSize + 4, logoSize + 4);
+                                    ctx.drawImage(logo, x, y, logoSize, logoSize);
+
+                                    showFinalResult();
+                                };
+                            };
+                            reader.readAsDataURL(logoInput.files[0]);
+                        } else {
+                            showFinalResult();
+                        }
                     };
-                    reader.readAsDataURL(logoInput.files[0]);
-                } else {
-                    resultCard.style.display = 'block';
                 }
-            };
-        }, 500);
-    }
-</script>
+            }, 150);
 
+            function showFinalResult() {
+                qrCard.classList.add('active');
+                downloadBtn.style.display = 'block';
+                qrCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function downloadQR() {
+            const canvas = document.getElementById('final-canvas');
+            const link = document.createElement('a');
+            link.download = 'custom-qr.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
 </body>
 </html>
